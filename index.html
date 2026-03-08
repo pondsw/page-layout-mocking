@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>โปรแกรมสร้างต้นฉบับ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #f0f0f0;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #222;
+    }
+
+    /* ── Input form ── */
+    .form-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      max-width: 340px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+      font-size: 0.88rem;
+      color: #333;
+    }
+
+    .field input[type="number"] {
+      width: 60px;
+      padding: 0.25rem 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.55rem;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #2563eb; }
+
+    /* ── Output ── */
+    #output {
+      display: none;
+    }
+
+    .output-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #222;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: #444;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.12);
+      flex-shrink: 0;
+    }
+
+    /* Signatures wrapper: scroll horizontally on small screens */
+    .signatures-wrap {
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .signatures {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .signature-block {
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .signature-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #888;
+      text-align: center;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .sig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .page-cell {
+      width: 72px;
+      height: 62px;
+      border-radius: 5px;
+      border: 1px solid rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px;
+      cursor: default;
+    }
+
+    .page-cell.blank {
+      opacity: 0.4;
+    }
+
+    .page-num {
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .page-label {
+      font-size: 0.62rem;
+      line-height: 1.2;
+      color: rgba(0,0,0,0.65);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>โปรแกรมสร้างต้นฉบับ</h1>
+
+  <div class="form-card">
+    <div class="field">
+      <label for="num-arms">จำนวนบท</label>
+      <input type="number" id="num-arms" value="5" min="1" max="20" />
+    </div>
+    <div class="field">
+      <label for="pages-per-arm">จำนวนหน้าต่อบท</label>
+      <input type="number" id="pages-per-arm" value="6" min="1" max="50" />
+    </div>
+    <div class="field">
+      <label for="preface-pages">จำนวนหน้าคำนำ</label>
+      <input type="number" id="preface-pages" value="1" min="0" max="20" />
+    </div>
+    <div class="field">
+      <label for="toc-pages">จำนวนหน้าสารบัญ</label>
+      <input type="number" id="toc-pages" value="1" min="0" max="20" />
+    </div>
+    <div class="field">
+      <label for="important-pages">จำนวนหน้าภาคผนวก</label>
+      <input type="number" id="important-pages" value="1" min="0" max="20" />
+    </div>
+    <div class="field">
+      <label for="other-pages">จำนวนหน้าอื่น ๆ</label>
+      <input type="number" id="other-pages" value="1" min="0" max="20" />
+    </div>
+    <button class="btn" onclick="generate()">ส่งผลิต</button>
+  </div>
+
+  <div id="output">
+    <p class="output-title">ผลลัพธ์</p>
+    <div class="legend" id="legend"></div>
+    <div class="signatures-wrap">
+      <div class="signatures" id="signatures"></div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTER_COLORS = [
+      '#FFD700', // yellow
+      '#FFA07A', // salmon
+      '#90EE90', // light green
+      '#87CEEB', // sky blue
+      '#DDA0DD', // plum
+      '#F4A460', // sandy brown
+      '#20B2AA', // light sea green
+      '#FF8C69', // salmon 2
+      '#9370DB', // medium purple
+      '#3CB371', // medium sea green
+    ];
+
+    const SECTION_COLORS = {
+      cover:      '#D0D0D0',
+      preface:    '#FFB6C1',
+      toc:        '#B0E0E6',
+      important:  '#FF8C00',
+      'back-cover': '#C8E6C9',
+      blank:      '#EFEFEF',
+    };
+
+    function chapterColor(n) {
+      return CHAPTER_COLORS[(n - 1) % CHAPTER_COLORS.length];
+    }
+
+    function pageColor(type) {
+      if (type.startsWith('chapter-')) {
+        const n = parseInt(type.split('-')[1]);
+        return chapterColor(n);
+      }
+      return SECTION_COLORS[type] || '#EFEFEF';
+    }
+
+    function pageLabel(type) {
+      if (type === 'cover')       return 'ปกหน้า';
+      if (type === 'preface')     return 'คำนำ';
+      if (type === 'toc')         return 'สารบัญ';
+      if (type === 'important')   return 'ภาคผนวก';
+      if (type === 'back-cover')  return 'อื่น ๆ';
+      if (type === 'blank')       return 'ว่าง';
+      if (type.startsWith('chapter-')) {
+        return 'บทที่ ' + type.split('-')[1];
+      }
+      return type;
+    }
+
+    function generate() {
+      const numArms       = Math.max(1, parseInt(document.getElementById('num-arms').value) || 1);
+      const pagesPerArm   = Math.max(1, parseInt(document.getElementById('pages-per-arm').value) || 1);
+      const prefacePages  = Math.max(0, parseInt(document.getElementById('preface-pages').value) || 0);
+      const tocPages      = Math.max(0, parseInt(document.getElementById('toc-pages').value) || 0);
+      const importantPages = Math.max(0, parseInt(document.getElementById('important-pages').value) || 0);
+      const otherPages     = Math.max(0, parseInt(document.getElementById('other-pages').value) || 0);
+
+      // Build ordered page list
+      const pages = [];
+
+      pages.push({ type: 'blank', unnumbered: true }); // first page blank, no page number
+      pages.push({ type: 'cover' });
+
+      for (let i = 0; i < prefacePages; i++) pages.push({ type: 'preface' });
+      for (let i = 0; i < tocPages; i++)     pages.push({ type: 'toc' });
+
+      for (let arm = 1; arm <= numArms; arm++) {
+        for (let p = 0; p < pagesPerArm; p++) {
+          pages.push({ type: `chapter-${arm}` });
+        }
+      }
+
+      for (let i = 0; i < importantPages; i++) pages.push({ type: 'important' });
+
+      for (let i = 0; i < otherPages; i++) pages.push({ type: 'back-cover' });
+
+      // Pad to next multiple of 16 (signature size)
+      const SIG = 16;
+      const padded = Math.ceil(pages.length / SIG) * SIG;
+      while (pages.length < padded) pages.push({ type: 'blank' });
+
+      // Assign page numbers (skip unnumbered pages, start from 1 at cover)
+      let pageNum = 1;
+      pages.forEach(p => {
+        if (p.unnumbered) {
+          p.number = null;
+        } else {
+          p.number = pageNum++;
+        }
+      });
+
+      // Split into signatures
+      const sigs = [];
+      for (let s = 0; s < pages.length / SIG; s++) {
+        sigs.push(pages.slice(s * SIG, (s + 1) * SIG));
+      }
+
+      renderOutput(sigs, numArms);
+    }
+
+    function renderOutput(sigs, numArms) {
+      // Legend
+      const legendEl = document.getElementById('legend');
+      const entries = [
+        { type: 'cover',      label: 'ปกหน้า / ปกหลัง' },
+        { type: 'preface',    label: 'คำนำ' },
+        { type: 'toc',        label: 'สารบัญ' },
+        { type: 'important',  label: 'ภาคผนวก' },
+        { type: 'blank',      label: 'ว่าง' },
+      ];
+      for (let i = 1; i <= numArms; i++) {
+        entries.push({ type: `chapter-${i}`, label: `บทที่ ${i}` });
+      }
+
+      legendEl.innerHTML = entries.map(e => `
+        <span class="legend-item">
+          <span class="legend-swatch" style="background:${pageColor(e.type)}"></span>
+          ${e.label}
+        </span>
+      `).join('');
+
+      // Signatures
+      const sigsEl = document.getElementById('signatures');
+      sigsEl.innerHTML = sigs.map((sig, idx) => {
+        const cells = sig.map(p => `
+          <div class="page-cell${p.type === 'blank' ? ' blank' : ''}"
+               style="background:${pageColor(p.type)}">
+            ${p.number !== null ? `<span class="page-num">${p.number}</span>` : ''}
+            ${p.number !== null ? `<span class="page-label">${pageLabel(p.type)}</span>` : ''}
+          </div>
+        `).join('');
+
+        return `
+          <div class="signature-block">
+            <div class="signature-label">ฉบับที่ ${idx + 1}</div>
+            <div class="sig-grid">${cells}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('output').style.display = 'block';
+    }
+
+    // Auto-generate on load with default values
+    generate();
+  </script>
+
+</body>
+</html>
