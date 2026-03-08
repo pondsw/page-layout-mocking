@@ -171,7 +171,7 @@
 </head>
 <body>
 
-  <h1>โปรแกรมสร้างต้นฉบับ</h1>
+  <h1>Page Layout Mocking</h1>
 
   <div class="form-card">
     <div class="field">
@@ -187,16 +187,20 @@
       <input type="number" id="preface-pages" value="1" min="0" max="20" />
     </div>
     <div class="field">
+      <label for="desc-pages">จำนวนหน้าคำอธิบายรายวิชา</label>
+      <input type="number" id="desc-pages" value="1" min="0" max="20" />
+    </div>
+    <div class="field">
       <label for="toc-pages">จำนวนหน้าสารบัญ</label>
       <input type="number" id="toc-pages" value="1" min="0" max="20" />
     </div>
     <div class="field">
-      <label for="important-pages">จำนวนหน้าภาคผนวก</label>
-      <input type="number" id="important-pages" value="1" min="0" max="20" />
-    </div>
-    <div class="field">
       <label for="other-pages">จำนวนหน้าอื่น ๆ</label>
       <input type="number" id="other-pages" value="1" min="0" max="20" />
+    </div>
+    <div class="field">
+      <label for="important-pages">จำนวนหน้าคำศัพท์</label>
+      <input type="number" id="important-pages" value="1" min="0" max="20" />
     </div>
     <button class="btn" onclick="generate()">ส่งผลิต</button>
   </div>
@@ -226,6 +230,7 @@
     const SECTION_COLORS = {
       cover:      '#D0D0D0',
       preface:    '#FFB6C1',
+      desc:       '#E1BEE7',
       toc:        '#B0E0E6',
       important:  '#FF8C00',
       'back-cover': '#C8E6C9',
@@ -247,8 +252,9 @@
     function pageLabel(type) {
       if (type === 'cover')       return 'ปกหน้า';
       if (type === 'preface')     return 'คำนำ';
+      if (type === 'desc')        return 'คำอธิบายรายวิชา';
       if (type === 'toc')         return 'สารบัญ';
-      if (type === 'important')   return 'ภาคผนวก';
+      if (type === 'important')   return 'คำศัพท์';
       if (type === 'back-cover')  return 'อื่น ๆ';
       if (type === 'blank')       return 'ว่าง';
       if (type.startsWith('chapter-')) {
@@ -261,6 +267,7 @@
       const numArms       = Math.max(1, parseInt(document.getElementById('num-arms').value) || 1);
       const pagesPerArm   = Math.max(1, parseInt(document.getElementById('pages-per-arm').value) || 1);
       const prefacePages  = Math.max(0, parseInt(document.getElementById('preface-pages').value) || 0);
+      const descPages     = Math.max(0, parseInt(document.getElementById('desc-pages').value) || 0);
       const tocPages      = Math.max(0, parseInt(document.getElementById('toc-pages').value) || 0);
       const importantPages = Math.max(0, parseInt(document.getElementById('important-pages').value) || 0);
       const otherPages     = Math.max(0, parseInt(document.getElementById('other-pages').value) || 0);
@@ -272,7 +279,9 @@
       pages.push({ type: 'cover' });
 
       for (let i = 0; i < prefacePages; i++) pages.push({ type: 'preface' });
+      for (let i = 0; i < descPages; i++)    pages.push({ type: 'desc' });
       for (let i = 0; i < tocPages; i++)     pages.push({ type: 'toc' });
+      for (let i = 0; i < otherPages; i++)   pages.push({ type: 'back-cover' });
 
       for (let arm = 1; arm <= numArms; arm++) {
         for (let p = 0; p < pagesPerArm; p++) {
@@ -281,8 +290,6 @@
       }
 
       for (let i = 0; i < importantPages; i++) pages.push({ type: 'important' });
-
-      for (let i = 0; i < otherPages; i++) pages.push({ type: 'back-cover' });
 
       // Pad to next multiple of 16 (signature size)
       const SIG = 16;
@@ -314,8 +321,10 @@
       const entries = [
         { type: 'cover',      label: 'ปกหน้า / ปกหลัง' },
         { type: 'preface',    label: 'คำนำ' },
+        { type: 'desc',       label: 'คำอธิบายรายวิชา' },
         { type: 'toc',        label: 'สารบัญ' },
-        { type: 'important',  label: 'ภาคผนวก' },
+        { type: 'back-cover', label: 'อื่น ๆ' },
+        { type: 'important',  label: 'คำศัพท์' },
         { type: 'blank',      label: 'ว่าง' },
       ];
       for (let i = 1; i <= numArms; i++) {
